@@ -9,7 +9,10 @@ develop:
 # Clean build artifacts
 clean:
 	rm -rf dist .jupyterlite.doit.db jupyter-lite-route.js
-	cd packages/operaton-extension && rm -f tsconfig.tsbuildinfo && rm -rf bpmn_moddle_extension && npm run clean --if-present || true
+	rm -rf .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension
+	rm -rf .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
+	rm -rf .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn
+	cd packages/operaton-extension && rm -f tsconfig.tsbuildinfo .jupyterlite.doit.db && rm -rf bpmn_moddle_extension operaton_extension/labextension && npm run clean --if-present || true
 
 # Install Node.js dependencies
 install-js:
