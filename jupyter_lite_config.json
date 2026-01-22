@@ -8,7 +8,6 @@
       "ipykernel",
       "comm",
       "ipywidgets",
-      "bqplot",
       "jupyterlab-bpmn",
       "jupyterlab-dmn"
     ],
@@ -16,7 +15,33 @@
   },
   "PyodideLockOfflineAddon": {
     "enabled": true,
-    "extra_includes": [".*"]
+    "extra_includes": [
+      "ipython",
+      "asttokens",
+      "six",
+      "decorator",
+      "executing",
+      "matplotlib_inline",
+      "traitlets",
+      "contourpy",
+      "cycler",
+      "fonttools",
+      "kiwisolver",
+      "packaging",
+      "pillow",
+      "pyparsing",
+      "python_dateutil",
+      "pytz",
+      "prompt_toolkit",
+      "wcwidth",
+      "pure_eval",
+      "pygments",
+      "stack_data",
+      "numpy",
+      "matplotlib",
+      "jedi",
+      "parso"
+    ]
   },
   "UvLocker": {
     "timeout": 300
