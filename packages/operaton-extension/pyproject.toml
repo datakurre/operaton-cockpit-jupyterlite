@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling>=1.5.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "operaton-extension"
+version = "0.1.0"
+description = "JupyterLab extension providing BroadcastChannel bridge for Pyodide workers"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["jupyterlab~=4.0"]
+
+[tool.hatch.build]
+artifacts = ["operaton_extension/labextension"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"operaton_extension/labextension" = "share/jupyter/labextensions/@operaton/operaton-extension"

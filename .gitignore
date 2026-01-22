@@ -14,3 +14,45 @@ devenv.local.yaml
 .jupyterlite.doit.db
 /.cache/
 /dist/
+packages/*/dist/
+
+# Node.js
+node_modules/
+packages/*/node_modules/
+packages/*/lib/
+/labextensions/
+
+# npm
+package-lock.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.whl
+
+# JupyterLab extension build artifacts
+packages/*/operaton_extension/labextension/
+packages/*/*.tgz
+
+# Yarn (if used)
+yarn.lock
+.yarn/
+.pnp.*
+
+# Editor
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agents
+TODO*

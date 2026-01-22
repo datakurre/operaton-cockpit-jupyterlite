@@ -5,8 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "operaton-extension",
     "ipywidgets>=8.1.8",
     "jupyter-server>=2.17.0",
+    "jupyterlab>=4.3.0",
     "jupyterlab-bpmn>=0.5.6",
     "jupyterlab-dmn>=0.2.0",
     "jupyterlab-widgets>=3.0.0",
@@ -15,3 +17,11 @@ dependencies = [
     "jupyterlite-pyodide-lock @ git+https://github.com/deathbeds/jupyterlite-pyodide-lock.git#subdirectory=py/jupyterlite-pyodide-lock",
     "jupyterlite-pyodide-lock-uv @ git+https://github.com/deathbeds/jupyterlite-pyodide-lock.git#subdirectory=py/jupyterlite-pyodide-lock-uv",
 ]
+
+[tool.uv.workspace]
+members = [
+    "packages/operaton-extension",
+]
+
+[tool.uv.sources]
+operaton-extension = { workspace = true, editable = true }

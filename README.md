@@ -1,10 +1,11 @@
 # Operaton Cockpit Jupyter Lite
 
-A JupyterLite-based plugin for Operaton Cockpit with BPMN and DMN support.
+A JupyterLite-based plugin for Operaton Cockpit with BPMN and DMN support, including JavaScript interop with `bpmn-moddle`.
 
 ## Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) - Python package manager
+- [Node.js](https://nodejs.org/) (v18+) - For building custom Pyodide kernel
 - [devenv](https://devenv.sh/) - Development environment (optional)
 
 ## Quick Start
@@ -13,6 +14,7 @@ A JupyterLite-based plugin for Operaton Cockpit with BPMN and DMN support.
 
 ```bash
 uv sync
+npm install
 ```
 
 ### Build JupyterLite site
@@ -21,11 +23,10 @@ uv sync
 make build
 ```
 
-Or manually:
-
-```bash
-uv run jupyter lite build --output-dir dist
-```
+This will:
+1. Install npm dependencies
+2. Build the custom Pyodide kernel with bpmn-moddle
+3. Build the JupyterLite site
 
 ### Serve locally
 
@@ -33,11 +34,7 @@ uv run jupyter lite build --output-dir dist
 make serve
 ```
 
-Or manually:
-
-```bash
-uv run jupyter lite serve --output-dir dist --port 8888
-```
+Then open http://localhost:8888 in your browser.
 
 ## Clean Build
 
@@ -47,12 +44,25 @@ To perform a clean build (recommended when changing dependencies):
 make clean build
 ```
 
-Or manually:
+## BPMN Moddle Integration
 
-```bash
-rm -rf dist .jupyterlite.doit.db
-uv run jupyter lite build --output-dir dist
+This project includes the `@operaton/operaton-extension` JupyterLab extension that provides a BroadcastChannel bridge between the main window and Pyodide workers. This enables Python code to access the `bpmn-moddle` JavaScript library and localStorage.
+
+### Usage from Python
+
+```python
+# Use the Python wrapper
+from bpmn_moddle import load_bpmn_moddle, parse_bpmn
+
+# Load the bpmn-moddle library (fetched via BroadcastChannel)
+await load_bpmn_moddle()
+
+# Parse BPMN XML
+result = await parse_bpmn(bpmn_xml)
+print(result['definitions'])
 ```
+
+See [files/test-bpmn-moddle.ipynb](files/test-bpmn-moddle.ipynb) for more examples.
 
 ## Configuration
 
@@ -83,8 +93,27 @@ make develop
 
 | Target | Description |
 |--------|-------------|
-| `make build` | Clean and build the JupyterLite site |
+| `make build` | Clean, build JS packages, and build JupyterLite site |
+| `make build-js` | Build only the JavaScript packages |
+| `make install-js` | Install npm dependencies |
 | `make clean` | Remove build artifacts |
 | `make serve` | Serve the site on port 8888 |
 | `make develop` | Open VS Code in devenv shell |
 | `make all` | Build and serve |
+
+## Project Structure
+
+```
+├── packages/                      # Custom JavaScript packages
+│   └── operaton-extension/        # JupyterLab extension with BroadcastChannel bridge
+│       ├── src/                   # TypeScript source
+│       └── operaton_extension/    # Python package with built labextension
+├── files/                         # Files included in JupyterLite
+│   ├── bpmn_moddle.py            # Python wrapper for bpmn-moddle
+│   ├── operaton.py               # Operaton API client
+│   └── test-bpmn-moddle.ipynb    # BPMN moddle test notebook
+├── jupyter_lite_config.json      # JupyterLite build config
+├── jupyter-lite.json             # JupyterLite runtime settings
+├── package.json                  # npm monorepo config
+└── pyproject.toml                # Python project config
+```

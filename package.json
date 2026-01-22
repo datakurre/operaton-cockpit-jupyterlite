@@ -1,0 +1,17 @@
+{
+  "name": "operaton-cockpit-jupyterlite-packages",
+  "private": true,
+  "workspaces": [
+    "packages/operaton-extension"
+  ],
+  "scripts": {
+    "build": "npm run build -w @operaton/operaton-extension",
+    "clean": "npm run clean --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

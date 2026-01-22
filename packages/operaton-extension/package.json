@@ -1,0 +1,47 @@
+{
+  "name": "@operaton/operaton-extension",
+  "version": "0.1.0",
+  "description": "JupyterLab extension providing BroadcastChannel bridge for Pyodide workers",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "bpmn"
+  ],
+  "license": "MIT",
+  "author": "Operaton",
+  "files": [
+    "lib/**/*.{d.ts,js,js.map,json}",
+    "schema/*.json"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/operaton/camunda-cockpit-plugin-jupyter.git"
+  },
+  "scripts": {
+    "build": "npm run build:lib && npm run build:umd",
+    "build:lib": "tsc",
+    "build:umd": "esbuild src/bpmn-moddle-umd.js --bundle --format=iife --global-name=BpmnModdle --outfile=operaton_extension/static/bpmn-moddle.umd.js --minify",
+    "build:labextension": "jupyter labextension build --development True .",
+    "build:labextension:prod": "jupyter labextension build .",
+    "clean": "rimraf lib",
+    "clean:labextension": "rimraf operaton_extension/labextension",
+    "clean:all": "npm run clean && npm run clean:labextension"
+  },
+  "dependencies": {
+    "bpmn-moddle": "^10.0.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/application": "^4.3.0",
+    "@jupyterlab/builder": "^4.3.0",
+    "esbuild": "^0.27.2",
+    "rimraf": "^6.0.0",
+    "typescript": "~5.3.0"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "operaton_extension/labextension"
+  }
+}
