@@ -9,6 +9,8 @@ resolution-markers = [
 [manifest]
 members = [
     "camunda-cockpit-plugin-jupyter",
+    "jupyterlab-bpmn",
+    "jupyterlab-dmn",
     "operaton-extension",
 ]
 
@@ -187,8 +189,8 @@ requires-dist = [
     { name = "ipywidgets", specifier = ">=8.1.8" },
     { name = "jupyter-server", specifier = ">=2.17.0" },
     { name = "jupyterlab", specifier = ">=4.3.0" },
-    { name = "jupyterlab-bpmn", specifier = ">=0.5.6" },
-    { name = "jupyterlab-dmn", specifier = ">=0.2.0" },
+    { name = "jupyterlab-bpmn", editable = "packages/jupyterlab-bpmn" },
+    { name = "jupyterlab-dmn", editable = "packages/jupyterlab-dmn" },
     { name = "jupyterlab-widgets", specifier = ">=3.0.0" },
     { name = "jupyterlite-core", specifier = ">=0.7.1" },
     { name = "jupyterlite-pyodide-kernel", specifier = ">=0.7.0" },
@@ -747,19 +749,11 @@ wheels = [
 
 [[package]]
 name = "jupyterlab-bpmn"
-version = "0.5.6"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/f1/4148cc3340c23784080cc6854cef46bba909d8c160921641922389a6befa/jupyterlab_bpmn-0.5.6-py3-none-any.whl", hash = "sha256:45a071bac8f1d12f967173fce8c99e352a74408d24a29bb048fc903852e14884", size = 138272, upload-time = "2023-03-25T07:49:59.038Z" },
-]
+source = { editable = "packages/jupyterlab-bpmn" }
 
 [[package]]
 name = "jupyterlab-dmn"
-version = "0.2.0"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/42/1920cc4f866377422b1092ea96871dfa1f6e6db49425363ce6abe36379ed/jupyterlab_dmn-0.2.0-py3-none-any.whl", hash = "sha256:cecbaf9459f1e49b2d1a757a9cb31adc5ee924a82ff1090c1ebc830a61c2b48d", size = 144530, upload-time = "2023-03-26T19:07:28.481Z" },
-]
+source = { editable = "packages/jupyterlab-dmn" }
 
 [[package]]
 name = "jupyterlab-pygments"

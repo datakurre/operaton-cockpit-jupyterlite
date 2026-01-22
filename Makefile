@@ -22,10 +22,17 @@ install-js:
 build-js: install-js
 	npm run build
 	uv run jupyter labextension build packages/operaton-extension --development True
-	@echo "Installing extension in venv..."
+	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-bpmn --development True
+	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-dmn --development True
+	@echo "Installing extensions in venv..."
 	mkdir -p .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static
 	cp -r packages/operaton-extension/operaton_extension/labextension/* .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/
 	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
+	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/* .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn/
+	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn
+	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/* .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn/
 
 # Build JupyterLite site with locked dependencies
 build: clean build-js
@@ -34,6 +41,11 @@ build: clean build-js
 	cp -r packages/operaton-extension/operaton_extension/labextension/static/* dist/extensions/@operaton/operaton-extension/static/
 	cp packages/operaton-extension/operaton_extension/labextension/package.json dist/extensions/@operaton/operaton-extension/
 	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js dist/extensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js dist/extensions/@operaton/operaton-extension/static/
+	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/static/* dist/extensions/jupyterlab-bpmn/static/
+	cp packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/package.json dist/extensions/jupyterlab-bpmn/
+	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/static/* dist/extensions/jupyterlab-dmn/static/
+	cp packages/jupyterlab-dmn/jupyterlab_dmn/labextension/package.json dist/extensions/jupyterlab-dmn/
 
 # Serve the built site locally
 serve:

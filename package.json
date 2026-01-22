@@ -2,10 +2,12 @@
   "name": "operaton-cockpit-jupyterlite-packages",
   "private": true,
   "workspaces": [
-    "packages/operaton-extension"
+    "packages/operaton-extension",
+    "packages/jupyterlab-bpmn",
+    "packages/jupyterlab-dmn"
   ],
   "scripts": {
-    "build": "npm run build -w @operaton/operaton-extension",
+    "build": "npm run build -w @operaton/operaton-extension && npm run build:lib -w jupyterlab-bpmn && npm run build:lib -w jupyterlab-dmn",
     "clean": "npm run clean --workspaces --if-present"
   },
   "devDependencies": {

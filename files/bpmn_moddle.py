@@ -153,6 +153,8 @@ async def load_bpmn_moddle():
     
     This function requests the bpmn-moddle UMD bundle from the extension
     via BroadcastChannel and evaluates it in the worker context.
+    
+    The bundle includes camunda-bpmn-moddle extensions for Camunda namespace support.
     """
     global _bpmn_moddle_loaded
     
@@ -183,7 +185,7 @@ async def load_bpmn_moddle():
     
     if hasattr(js, 'BpmnModdle'):
         _bpmn_moddle_loaded = True
-        print("bpmn-moddle: Loaded successfully via BroadcastChannel")
+        print("bpmn-moddle: Loaded successfully via BroadcastChannel (with Camunda extensions)")
         return js.BpmnModdle
     else:
         raise ImportError("BpmnModdle not found after evaluating bundle")
@@ -192,6 +194,8 @@ async def load_bpmn_moddle():
 async def parse_bpmn(xml_string: str):
     """
     Parse a BPMN 2.0 XML string.
+    
+    The BpmnModdle instance is automatically configured with Camunda extensions.
     
     Args:
         xml_string: The BPMN XML content to parse
@@ -203,8 +207,11 @@ async def parse_bpmn(xml_string: str):
         - references: Array of references
         - warnings: Array of parsing warnings
     """
-    BpmnModdle = await load_bpmn_moddle()
-    moddle = BpmnModdle.new()
+    # Use createBpmnModdle which includes Camunda extensions
+    if not hasattr(js, 'createBpmnModdle'):
+        await load_bpmn_moddle()
+    
+    moddle = js.createBpmnModdle()
     result = await moddle.fromXML(xml_string)
     return result
 
@@ -220,8 +227,10 @@ async def to_bpmn_xml(element, format_output=True):
     Returns:
         The BPMN XML string
     """
-    BpmnModdle = await load_bpmn_moddle()
-    moddle = BpmnModdle.new()
+    if not hasattr(js, 'createBpmnModdle'):
+        await load_bpmn_moddle()
+    
+    moddle = js.createBpmnModdle()
     options = js.Object.new()
     options.format = format_output
     result = await moddle.toXML(element, options)
@@ -239,8 +248,10 @@ async def create_element(element_type: str, **attrs):
     Returns:
         A new BPMN element
     """
-    BpmnModdle = await load_bpmn_moddle()
-    moddle = BpmnModdle.new()
+    if not hasattr(js, 'createBpmnModdle'):
+        await load_bpmn_moddle()
+    
+    moddle = js.createBpmnModdle()
     js_attrs = js.Object.new()
     for key, value in attrs.items():
         setattr(js_attrs, key, value)

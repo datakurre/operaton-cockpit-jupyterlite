@@ -27,7 +27,8 @@ This is a JupyterLite-based plugin for Operaton Cockpit that provides BPMN and D
 | `jupyter_lite_config.json` | JupyterLite build configuration (Pyodide packages) |
 | `jupyter-lite.json` | JupyterLite runtime settings |
 | `Makefile` | Build and development commands |
-| `files/bpmn_moddle.py` | Python wrapper for bpmn-moddle |
+| `files/bpmn_moddle.py` | Python wrapper for bpmn-moddle (with Camunda extensions) |
+| `files/dmn_moddle.py` | Python wrapper for dmn-moddle (with Camunda extensions) |
 | `files/test-bpmn-moddle.ipynb` | Test notebook for bpmn-moddle |
 | `devenv.nix` | Nix-based development environment configuration |
 
@@ -35,18 +36,28 @@ This is a JupyterLite-based plugin for Operaton Cockpit that provides BPMN and D
 
 ```
 ├── packages/                           # Custom JavaScript packages
-│   └── operaton-extension/             # JupyterLab extension
+│   ├── operaton-extension/             # JupyterLab extension (bridge)
+│   │   ├── src/                        # TypeScript source
+│   │   │   ├── index.ts                # BroadcastChannel bridge
+│   │   │   ├── bpmn-moddle-umd.js      # BPMN moddle bundle entry
+│   │   │   └── dmn-moddle-umd.js       # DMN moddle bundle entry
+│   │   ├── operaton_extension/         # Python package
+│   │   │   ├── labextension/           # Built JupyterLab extension
+│   │   │   └── static/                 # Static assets (bpmn/dmn-moddle.umd.js)
+│   │   ├── package.json
+│   │   ├── pyproject.toml
+│   │   └── tsconfig.json
+│   ├── jupyterlab-bpmn/                # Vendored BPMN file renderer
+│   │   ├── src/                        # TypeScript source
+│   │   ├── jupyterlab_bpmn/            # Python package
+│   │   └── package.json
+│   └── jupyterlab-dmn/                 # Vendored DMN file renderer
 │       ├── src/                        # TypeScript source
-│       │   └── index.ts                # BroadcastChannel bridge
-│       ├── operaton_extension/         # Python package
-│       │   ├── labextension/           # Built JupyterLab extension
-│       │   └── static/                 # Static assets (bpmn-moddle.umd.js)
-│       ├── package.json
-│       ├── pyproject.toml
-│       ├── tsconfig.json
-│       └── webpack.config.js
+│       ├── jupyterlab_dmn/             # Python package
+│       └── package.json
 ├── files/                              # Files included in build
 │   ├── bpmn_moddle.py                  # Python wrapper for bpmn-moddle
+│   ├── dmn_moddle.py                   # Python wrapper for dmn-moddle
 │   ├── operaton.py                     # Operaton API client
 │   └── test-bpmn-moddle.ipynb          # Test notebook
 ├── dist/                               # Build output (gitignored)
@@ -100,7 +111,8 @@ This architecture solves the problem that Web Workers cannot directly access:
 
 | Action | Description |
 |--------|-------------|
-| `get_bpmn_moddle_bundle` | Returns the bpmn-moddle UMD bundle code |
+| `get_bpmn_moddle_bundle` | Returns the bpmn-moddle UMD bundle code (with Camunda extensions) |
+| `get_dmn_moddle_bundle` | Returns the dmn-moddle UMD bundle code (with Camunda extensions) |
 | `get_localstorage` | Read a localStorage value |
 | `set_localstorage` | Write a localStorage value |
 | `remove_localstorage` | Remove a localStorage key |
@@ -109,13 +121,23 @@ This architecture solves the problem that Web Workers cannot directly access:
 ### Usage from Python
 
 ```python
+# BPMN parsing (with Camunda extensions)
 from bpmn_moddle import load_bpmn_moddle, parse_bpmn
 
 # Load bpmn-moddle (fetched via BroadcastChannel bridge)
 await load_bpmn_moddle()
 
-# Parse BPMN XML
+# Parse BPMN XML (supports Camunda namespace)
 result = await parse_bpmn(bpmn_xml)
+
+# DMN parsing (with Camunda extensions)
+from dmn_moddle import load_dmn_moddle, parse_dmn
+
+# Load dmn-moddle (fetched via BroadcastChannel bridge)
+await load_dmn_moddle()
+
+# Parse DMN XML (supports Camunda namespace)
+result = await parse_dmn(dmn_xml)
 ```
 
 ### Adding JavaScript Libraries

@@ -21,7 +21,11 @@ dependencies = [
 [tool.uv.workspace]
 members = [
     "packages/operaton-extension",
+    "packages/jupyterlab-bpmn",
+    "packages/jupyterlab-dmn",
 ]
 
 [tool.uv.sources]
 operaton-extension = { workspace = true, editable = true }
+jupyterlab-bpmn = { workspace = true, editable = true }
+jupyterlab-dmn = { workspace = true, editable = true }
