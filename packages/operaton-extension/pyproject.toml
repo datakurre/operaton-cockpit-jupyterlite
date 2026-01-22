@@ -9,10 +9,15 @@ description = "JupyterLab extension providing BroadcastChannel bridge for Pyodid
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "jupyterlite-core>=0.7.1",
+]
 
 [project.optional-dependencies]
 dev = ["jupyterlab~=4.0"]
+
+[project.entry-points."jupyterlite.addon.v0"]
+operaton = "operaton_extension.addons.operaton:OperatonAddon"
 
 [tool.hatch.build]
 artifacts = ["operaton_extension/labextension"]

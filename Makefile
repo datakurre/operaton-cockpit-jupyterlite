@@ -8,7 +8,7 @@ develop:
 
 # Clean build artifacts
 clean:
-	rm -rf dist .jupyterlite.doit.db
+	rm -rf dist .jupyterlite.doit.db jupyter-lite-route.js
 	cd packages/operaton-extension && rm -f tsconfig.tsbuildinfo && rm -rf bpmn_moddle_extension && npm run clean --if-present || true
 
 # Install Node.js dependencies
@@ -46,6 +46,8 @@ build: clean build-js
 	cp packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/package.json dist/extensions/jupyterlab-bpmn/
 	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/static/* dist/extensions/jupyterlab-dmn/static/
 	cp packages/jupyterlab-dmn/jupyterlab_dmn/labextension/package.json dist/extensions/jupyterlab-dmn/
+	@echo "Copying Operaton Cockpit route plugin..."
+	cp jupyter-lite-route.js dist/
 
 # Serve the built site locally
 serve:

@@ -1001,6 +1001,9 @@ wheels = [
 name = "operaton-extension"
 version = "0.1.0"
 source = { editable = "packages/operaton-extension" }
+dependencies = [
+    { name = "jupyterlite-core" },
+]
 
 [package.optional-dependencies]
 dev = [
@@ -1008,7 +1011,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "jupyterlab", marker = "extra == 'dev'", specifier = "~=4.0" }]
+requires-dist = [
+    { name = "jupyterlab", marker = "extra == 'dev'", specifier = "~=4.0" },
+    { name = "jupyterlite-core", specifier = ">=0.7.1" },
+]
 provides-extras = ["dev"]
 
 [[package]]

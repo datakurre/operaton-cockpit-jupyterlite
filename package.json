@@ -7,11 +7,16 @@
     "packages/jupyterlab-dmn"
   ],
   "scripts": {
-    "build": "npm run build -w @operaton/operaton-extension && npm run build:lib -w jupyterlab-bpmn && npm run build:lib -w jupyterlab-dmn",
-    "clean": "npm run clean --workspaces --if-present"
+    "build": "npm run build:route && npm run build -w @operaton/operaton-extension && npm run build:lib -w jupyterlab-bpmn && npm run build:lib -w jupyterlab-dmn",
+    "build:route": "webpack --config webpack.route.config.js",
+    "clean": "npm run clean --workspaces --if-present && rm -f jupyter-lite-route.js"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^4.3.0"
+    "@jupyterlab/builder": "^4.3.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.0.0",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4"
   },
   "engines": {
     "node": ">=18.0.0"
