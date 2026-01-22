@@ -27,9 +27,8 @@ This is a JupyterLite-based plugin for Operaton Cockpit that provides BPMN and D
 | `jupyter_lite_config.json` | JupyterLite build configuration (Pyodide packages) |
 | `jupyter-lite.json` | JupyterLite runtime settings |
 | `Makefile` | Build and development commands |
-| `files/bpmn_moddle.py` | Python wrapper for bpmn-moddle (with Camunda extensions) |
-| `files/dmn_moddle.py` | Python wrapper for dmn-moddle (with Camunda extensions) |
-| `files/test-bpmn-moddle.ipynb` | Test notebook for bpmn-moddle |
+| `files/operaton.py` | Unified Python library (BPMN/DMN moddle, differ, REST API) |
+| `files/examples/` | Example notebooks demonstrating library usage |
 | `devenv.nix` | Nix-based development environment configuration |
 
 ## Directory Structure
@@ -56,10 +55,12 @@ This is a JupyterLite-based plugin for Operaton Cockpit that provides BPMN and D
 │       ├── jupyterlab_dmn/             # Python package
 │       └── package.json
 ├── files/                              # Files included in build
-│   ├── bpmn_moddle.py                  # Python wrapper for bpmn-moddle
-│   ├── dmn_moddle.py                   # Python wrapper for dmn-moddle
-│   ├── operaton.py                     # Operaton API client
-│   └── test-bpmn-moddle.ipynb          # Test notebook
+│   ├── operaton.py                     # Unified Python library
+│   └── examples/                       # Example notebooks
+│       ├── bpmn-moddle.ipynb           # BPMN parsing demo
+│       ├── dmn-moddle.ipynb            # DMN parsing demo
+│       ├── bpmn-differ.ipynb           # BPMN comparison demo
+│       └── operaton-api.ipynb          # REST API demo
 ├── dist/                               # Build output (gitignored)
 └── node_modules/                       # npm packages (gitignored)
 ```
@@ -113,6 +114,7 @@ This architecture solves the problem that Web Workers cannot directly access:
 |--------|-------------|
 | `get_bpmn_moddle_bundle` | Returns the bpmn-moddle UMD bundle code (with Camunda extensions) |
 | `get_dmn_moddle_bundle` | Returns the dmn-moddle UMD bundle code (with Camunda extensions) |
+| `get_bpmn_js_differ_bundle` | Returns the bpmn-js-differ UMD bundle code |
 | `get_localstorage` | Read a localStorage value |
 | `set_localstorage` | Write a localStorage value |
 | `remove_localstorage` | Remove a localStorage key |
@@ -120,24 +122,33 @@ This architecture solves the problem that Web Workers cannot directly access:
 
 ### Usage from Python
 
+All functionality is available through the unified `operaton` module:
+
 ```python
+import operaton
+from operaton import Operaton
+
+# Load environment (required for REST API)
+await operaton.load_env()
+
+# REST API
+definitions = Operaton.get('/process-definition')
+
 # BPMN parsing (with Camunda extensions)
-from bpmn_moddle import load_bpmn_moddle, parse_bpmn
-
-# Load bpmn-moddle (fetched via BroadcastChannel bridge)
-await load_bpmn_moddle()
-
-# Parse BPMN XML (supports Camunda namespace)
-result = await parse_bpmn(bpmn_xml)
+await operaton.load_bpmn_moddle()
+result = await operaton.parse_bpmn(bpmn_xml)
+xml = await operaton.to_bpmn_xml(result.rootElement)
 
 # DMN parsing (with Camunda extensions)
-from dmn_moddle import load_dmn_moddle, parse_dmn
+await operaton.load_dmn_moddle()
+result = await operaton.parse_dmn(dmn_xml)
+xml = await operaton.to_dmn_xml(result.rootElement)
 
-# Load dmn-moddle (fetched via BroadcastChannel bridge)
-await load_dmn_moddle()
-
-# Parse DMN XML (supports Camunda namespace)
-result = await parse_dmn(dmn_xml)
+# BPMN diffing (comparing two BPMN diagrams)
+diff_result = await operaton.compare_bpmn(old_bpmn_xml, new_bpmn_xml)
+print(diff_result.added_ids)     # List of added element IDs
+print(diff_result.removed_ids)   # List of removed element IDs  
+print(diff_result.changed_ids)   # List of changed element IDs
 ```
 
 ### Adding JavaScript Libraries
@@ -147,7 +158,7 @@ To add more JavaScript libraries to be served via the bridge:
 1. Add dependency to `packages/operaton-extension/package.json`
 2. Bundle via webpack into UMD format
 3. Add a new action in `src/index.ts` to fetch and return the bundle
-4. Add corresponding Python code in `files/bpmn_moddle.py` (or a new module)
+4. Add corresponding Python code in `files/operaton.py`
 
 ### Adding Pyodide Packages
 
@@ -155,7 +166,15 @@ To add Python packages available in the JupyterLite environment, edit `jupyter_l
 
 ## Operaton Integration
 
-The `files/operaton.py` module provides an `Operaton` class for interacting with the Operaton engine REST API from within notebooks. It uses environment variables:
+The `files/operaton.py` module is a unified Python library that provides:
+
+1. **BroadcastChannel Bridge** - Communication with JupyterLab extension
+2. **BPMN Moddle** - Parse and serialize BPMN 2.0 XML (with Camunda extensions)
+3. **DMN Moddle** - Parse and serialize DMN 1.3 XML (with Camunda extensions)
+4. **BPMN-JS-Differ** - Compare two BPMN diagrams
+5. **REST API Client** - Interact with Operaton engine REST API
+
+Environment variables (loaded via `await operaton.load_env()` from localStorage):
 
 - `OPERATON_ENGINE_API` - Base URL for the Operaton REST API
 - `OPERATON_CSRF_TOKEN` - CSRF token for POST/PUT/DELETE requests

@@ -1,4 +1,4 @@
-.PHONY: develop build build-js clean serve
+.PHONY: develop build build-debug build-js build-js-debug clean serve
 
 default: build
 
@@ -21,6 +21,15 @@ install-js:
 # Step 3: Install in venv for JupyterLite to find
 build-js: install-js
 	npm run build
+	$(MAKE) _build-js-post
+
+# Build JavaScript packages with debug logging enabled
+build-js-debug: install-js
+	DEBUG_BUILD=true npm run build
+	$(MAKE) _build-js-post
+
+# Common post-build steps for JavaScript packages (internal target)
+_build-js-post:
 	uv run jupyter labextension build packages/operaton-extension --development True
 	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-bpmn --development True
 	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-dmn --development True
@@ -29,6 +38,7 @@ build-js: install-js
 	cp -r packages/operaton-extension/operaton_extension/labextension/* .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/
 	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
 	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/bpmn-js-differ.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
 	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
 	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/* .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn/
 	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn
@@ -36,12 +46,21 @@ build-js: install-js
 
 # Build JupyterLite site with locked dependencies
 build: clean build-js
+	$(MAKE) _build-lite
+
+# Build with debug logging enabled in operaton-extension
+build-debug: clean build-js-debug
+	$(MAKE) _build-lite
+
+# Common JupyterLite build steps (internal target)
+_build-lite:
 	uv run jupyter lite build --output-dir dist
 	@echo "Copying fresh extension files to dist..."
 	cp -r packages/operaton-extension/operaton_extension/labextension/static/* dist/extensions/@operaton/operaton-extension/static/
 	cp packages/operaton-extension/operaton_extension/labextension/package.json dist/extensions/@operaton/operaton-extension/
 	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js dist/extensions/@operaton/operaton-extension/static/
 	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js dist/extensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/bpmn-js-differ.umd.js dist/extensions/@operaton/operaton-extension/static/
 	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/static/* dist/extensions/jupyterlab-bpmn/static/
 	cp packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/package.json dist/extensions/jupyterlab-bpmn/
 	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/static/* dist/extensions/jupyterlab-dmn/static/

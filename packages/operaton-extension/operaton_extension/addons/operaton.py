@@ -14,7 +14,6 @@ PATCH = """
             const env = {};
             for (const key of Object.keys(ev.data)) {
               env['OPERATON_' + key.replace('Api', '_API').replace('Token', '_TOKEN').toUpperCase()] = key.endsWith('Api') ? ev.origin + ev.data[key] : ev.data[key];
-              env['CAMUNDA_' + key.replace('Api', '_API').replace('Token', '_TOKEN').toUpperCase()] = key.endsWith('Api') ? ev.origin + ev.data[key] : ev.data[key];
             }
             window.localStorage.setItem('env', JSON.stringify(env));
           }

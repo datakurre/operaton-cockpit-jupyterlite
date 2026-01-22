@@ -20,11 +20,19 @@ import {
   JupyterFrontEndPlugin,
 } from '@jupyterlab/application';
 
+import { PageConfig } from '@jupyterlab/coreutils';
+
+import { DEBUG_BUILD } from './debug-config';
+
 /**
  * Debug flag - set to true to enable verbose logging.
- * Can be enabled at runtime via: localStorage.setItem('operaton-debug', 'true')
+ * Can be enabled at build time via: DEBUG_BUILD=true npm run build
+ * Or at runtime via: localStorage.setItem('operaton-debug', 'true')
  */
 const DEBUG = (): boolean => {
+  if (DEBUG_BUILD) {
+    return true;
+  }
   try {
     return localStorage.getItem('operaton-debug') === 'true';
   } catch {
@@ -40,6 +48,20 @@ let bpmnModdleBundleCache: string | null = null;
 // Cache for the dmn-moddle bundle
 let dmnModdleBundleCache: string | null = null;
 
+// Cache for the bpmn-js-differ bundle
+let bpmnJsDifferBundleCache: string | null = null;
+
+/**
+ * Get the base URL for extension static assets.
+ * Uses PageConfig.getBaseUrl() to handle JupyterLite served from sub-paths.
+ */
+function getExtensionStaticUrl(filename: string): string {
+  const baseUrl = PageConfig.getBaseUrl();
+  // Remove trailing slash if present, then add extensions path
+  const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  return `${base}/extensions/@operaton/operaton-extension/static/${filename}`;
+}
+
 /**
  * Fetch the bpmn-moddle UMD bundle and cache it
  */
@@ -49,8 +71,8 @@ async function getBpmnModdleBundle(): Promise<string> {
   }
   
   // The bundle is served as a static asset of this extension
-  // Use absolute path from root to avoid issues with relative paths when in /lab/
-  const bundleUrl = '/extensions/@operaton/operaton-extension/static/bpmn-moddle.umd.js';
+  // Use PageConfig.getBaseUrl() to handle sub-path deployments
+  const bundleUrl = getExtensionStaticUrl('bpmn-moddle.umd.js');
   if (DEBUG()) console.log('operaton-bridge: Fetching bpmn-moddle bundle from', bundleUrl);
   
   const response = await fetch(bundleUrl);
@@ -72,8 +94,8 @@ async function getDmnModdleBundle(): Promise<string> {
   }
   
   // The bundle is served as a static asset of this extension
-  // Use absolute path from root to avoid issues with relative paths when in /lab/
-  const bundleUrl = '/extensions/@operaton/operaton-extension/static/dmn-moddle.umd.js';
+  // Use PageConfig.getBaseUrl() to handle sub-path deployments
+  const bundleUrl = getExtensionStaticUrl('dmn-moddle.umd.js');
   if (DEBUG()) console.log('operaton-bridge: Fetching dmn-moddle bundle from', bundleUrl);
   
   const response = await fetch(bundleUrl);
@@ -84,6 +106,29 @@ async function getDmnModdleBundle(): Promise<string> {
   dmnModdleBundleCache = await response.text();
   if (DEBUG()) console.log('operaton-bridge: dmn-moddle bundle cached', dmnModdleBundleCache.length, 'bytes');
   return dmnModdleBundleCache;
+}
+
+/**
+ * Fetch the bpmn-js-differ UMD bundle and cache it
+ */
+async function getBpmnJsDifferBundle(): Promise<string> {
+  if (bpmnJsDifferBundleCache) {
+    return bpmnJsDifferBundleCache;
+  }
+  
+  // The bundle is served as a static asset of this extension
+  // Use PageConfig.getBaseUrl() to handle sub-path deployments
+  const bundleUrl = getExtensionStaticUrl('bpmn-js-differ.umd.js');
+  if (DEBUG()) console.log('operaton-bridge: Fetching bpmn-js-differ bundle from', bundleUrl);
+  
+  const response = await fetch(bundleUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch bpmn-js-differ bundle: ${response.status} ${response.statusText}`);
+  }
+  
+  bpmnJsDifferBundleCache = await response.text();
+  if (DEBUG()) console.log('operaton-bridge: bpmn-js-differ bundle cached', bpmnJsDifferBundleCache.length, 'bytes');
+  return bpmnJsDifferBundleCache;
 }
 
 /**
@@ -111,6 +156,12 @@ async function handleMessage(
       case 'get_dmn_moddle_bundle': {
         const bundle = await getDmnModdleBundle();
         response = { action: 'dmn_moddle_bundle', request_id: requestId, bundle };
+        break;
+      }
+      
+      case 'get_bpmn_js_differ_bundle': {
+        const bundle = await getBpmnJsDifferBundle();
+        response = { action: 'bpmn_js_differ_bundle', request_id: requestId, bundle };
         break;
       }
       
@@ -211,7 +262,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     if (DEBUG()) {
       const testChannel = new BroadcastChannel(CHANNEL_NAME);
       testChannel.onmessage = (event) => {
-        console.log('operaton-bridge: TEST channel received:', event.data);
+        console.log('operaton-bridge: Self-test channel received:', event.data);
       };
       // Send a test message
       setTimeout(() => {
