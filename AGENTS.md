@@ -179,6 +179,161 @@ Environment variables (loaded via `await operaton.load_env()` from localStorage)
 - `OPERATON_ENGINE_API` - Base URL for the Operaton REST API
 - `OPERATON_CSRF_TOKEN` - CSRF token for POST/PUT/DELETE requests
 
+## Async Limitations in ipywidgets + Pyodide + JupyterLite
+
+This section documents critical limitations when using async/await with ipywidgets in Pyodide running in JupyterLite. Understanding these constraints is essential for building interactive notebooks.
+
+### The Core Problem
+
+ipywidgets event callbacks (like `button.on_click()`) are executed **synchronously** by the JavaScript event system. However, many operations in Pyodide require `async/await` (e.g., BroadcastChannel communication, JavaScript Promises). This creates a fundamental mismatch.
+
+### Limitation 1: `asyncio.ensure_future()` in Callbacks
+
+**Problem**: Using `asyncio.ensure_future(coroutine)` inside a widget callback (like `button.on_click`) often fails or behaves unexpectedly in Pyodide.
+
+```python
+# THIS DOES NOT WORK RELIABLY IN PYODIDE
+def on_button_click(button):
+    asyncio.ensure_future(some_async_function())  # May not execute properly
+
+button.on_click(on_button_click)
+```
+
+**Why**: The Pyodide WebLoop is already running when the callback is triggered. `ensure_future` schedules the coroutine but the event loop may not process it as expected because the synchronous callback blocks the loop's ability to advance.
+
+### Limitation 2: No `await` in Synchronous Callbacks
+
+**Problem**: Widget callbacks are synchronous - you cannot use `await` directly:
+
+```python
+# THIS IS A SYNTAX ERROR - callbacks can't be async
+async def on_button_click(button):
+    result = await some_async_function()  # Can't do this!
+
+button.on_click(on_button_click)  # on_click expects a sync function
+```
+
+### Limitation 3: Nested Event Loop Issues
+
+**Problem**: Pyodide uses a custom `WebLoop` for asyncio that integrates with the browser's event loop. You cannot call `asyncio.run()` or `loop.run_until_complete()` from within a running event loop.
+
+```python
+# THIS WILL FAIL
+def on_button_click(button):
+    asyncio.run(some_async_function())  # RuntimeError: event loop already running
+```
+
+### Limitation 4: BroadcastChannel Responses May Be Lost
+
+**Problem**: When async code is triggered from a synchronous callback, BroadcastChannel responses may not be processed because the message handler depends on the event loop advancing.
+
+### Workarounds and Solutions
+
+#### Solution 1: Pre-load All Async Resources Before Widget Interaction
+
+Move all async operations to notebook cells that run before the widget is displayed:
+
+```python
+# Cell 1: Load everything async (this works - top-level await)
+await operaton.load_env()
+await operaton.load_bpmn_moddle()
+await operaton.load_bpmn_js_differ()
+
+# Cell 2: Now use synchronous-only operations in widgets
+def on_button_click(button):
+    # Use only sync operations here
+    xml = Operaton.get(f'/process-definition/{id}/xml')  # Sync REST call
+    # Store for later use
+    global cached_xml
+    cached_xml = xml
+```
+
+#### Solution 2: Use `pyodide.webloop.WebLoopPolicy` with `create_task`
+
+In some cases, `asyncio.create_task()` may work better than `ensure_future()`:
+
+```python
+import asyncio
+
+async def do_async_work():
+    result = await some_async_function()
+    # Update widget output here
+
+def on_button_click(button):
+    asyncio.create_task(do_async_work())
+```
+
+**Note**: This still has limitations and may not work in all scenarios.
+
+#### Solution 3: Use JavaScript `setTimeout` to Defer Execution
+
+Use JavaScript interop to defer the async work to a new event loop tick:
+
+```python
+from pyodide.ffi import create_proxy
+import js
+
+async def do_work():
+    result = await async_operation()
+    # process result
+
+def on_button_click(button):
+    # Defer to next event loop tick
+    async def deferred():
+        await do_work()
+    
+    proxy = create_proxy(lambda: asyncio.create_task(deferred()))
+    js.setTimeout(proxy, 0)
+```
+
+#### Solution 4: Redesign to Avoid Async in Callbacks
+
+The most robust solution is to redesign the workflow:
+
+1. **Fetch all data upfront** in async cells before widget creation
+2. **Cache results** in module-level variables
+3. **Use only synchronous operations** in widget callbacks
+4. **Display results** that were pre-computed
+
+Example pattern:
+```python
+# Cell 1: Async setup (runs at cell execution time)
+all_definitions = Operaton.get('/process-definition?latestVersion=false')
+xml_cache = {}
+
+async def prefetch_all_xml():
+    for defn in all_definitions:
+        response = Operaton.get(f'/process-definition/{defn["id"]}/xml')
+        xml_cache[defn['id']] = response['bpmn20Xml']
+        
+await prefetch_all_xml()
+
+# Cell 2: Widget with only sync operations
+def on_compare_click(button):
+    old_xml = xml_cache[old_dropdown.value]  # Sync lookup
+    new_xml = xml_cache[new_dropdown.value]  # Sync lookup
+    # ... compute diff using pre-loaded libraries
+```
+
+### Pyodide Stack Switching (Experimental)
+
+Pyodide has experimental "stack switching" support (`enableRunUntilComplete` option in `loadPyodide`) that allows `run_until_complete` to block using WebAssembly stack switching. This is enabled by default in recent Pyodide versions (0.27.7+), but:
+
+- Requires browser support for WebAssembly stack switching (JSPI)
+- May not be fully compatible with JupyterLite's kernel architecture
+- Should not be relied upon for production code yet
+
+### Summary Table
+
+| Pattern | Works in Pyodide/JupyterLite? | Notes |
+|---------|------------------------------|-------|
+| Top-level `await` in cells | ✅ Yes | The standard way to use async |
+| `asyncio.ensure_future()` in callback | ⚠️ Unreliable | May not execute as expected |
+| `asyncio.create_task()` in callback | ⚠️ Unreliable | Similar issues |
+| `asyncio.run()` in callback | ❌ No | Event loop already running |
+| `await` in callback | ❌ No | Callbacks must be sync |
+| Pre-loading then sync operations | ✅ Yes | Recommended approach |
+
 ## Notes for Agents
 
 - The `dist/` directory is the build output - don't commit it

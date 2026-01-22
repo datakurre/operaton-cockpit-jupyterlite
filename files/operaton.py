@@ -782,3 +782,39 @@ async def compare_bpmn(old_xml: str, new_xml: str) -> BpmnDiffResult:
     js_diff = diff_bpmn(old_result.rootElement, new_result.rootElement)
     
     return BpmnDiffResult(js_diff)
+
+
+def compare_bpmn_definitions(old_definitions, new_definitions) -> BpmnDiffResult:
+    """
+    Compare two pre-parsed BPMN definitions (synchronous).
+    
+    Use this function when you have already parsed the BPMN XML using parse_bpmn()
+    and need to perform the comparison synchronously (e.g., in widget callbacks).
+    
+    Args:
+        old_definitions: The old BPMN definitions element (from parse_bpmn().rootElement)
+        new_definitions: The new BPMN definitions element (from parse_bpmn().rootElement)
+        
+    Returns:
+        BpmnDiffResult object with the differences
+        
+    Example:
+        # Async setup (in a cell)
+        await operaton.load_bpmn_moddle()
+        await operaton.load_bpmn_js_differ()
+        old_result = await operaton.parse_bpmn(old_xml)
+        new_result = await operaton.parse_bpmn(new_xml)
+        
+        # Sync comparison (can be used in widget callbacks)
+        diff = operaton.compare_bpmn_definitions(
+            old_result.rootElement,
+            new_result.rootElement
+        )
+    """
+    if not hasattr(js, 'bpmnDiff'):
+        raise RuntimeError(
+            "bpmn-js-differ not loaded. Call await operaton.load_bpmn_js_differ() first."
+        )
+    
+    js_diff = diff_bpmn(old_definitions, new_definitions)
+    return BpmnDiffResult(js_diff)
