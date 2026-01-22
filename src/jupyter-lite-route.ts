@@ -47,9 +47,9 @@ export default [
           })
         ).json();
         const displayName = `${profile['firstName']}`;
-        iframe.src = `../custom/jupyter/lab/index.html?room=default&username=${displayName}`;
+        iframe.src = `../scripts/jupyter/lab/index.html?room=default&username=${displayName}`;
       } catch (e) {
-        iframe.src = '../custom/jupyter/lab/index.html';
+        iframe.src = '../scripts/jupyter/lab/index.html';
       }
       iframe.style.setProperty('position', 'absolute');
       iframe.style.setProperty('top', '0px');
