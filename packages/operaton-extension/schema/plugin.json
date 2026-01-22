@@ -1,0 +1,7 @@
+{
+  "title": "BPMN-Moddle Extension",
+  "description": "Settings for the bpmn-moddle extension",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}

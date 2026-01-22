@@ -1,0 +1,55 @@
+{
+  "name": "@operaton/operaton-extension",
+  "version": "0.1.0",
+  "description": "JupyterLab extension providing BroadcastChannel bridge for Pyodide workers",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "bpmn"
+  ],
+  "license": "MIT",
+  "author": "Operaton",
+  "files": [
+    "lib/**/*.{d.ts,js,js.map,json}",
+    "schema/*.json"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/operaton/camunda-cockpit-plugin-jupyter.git"
+  },
+  "scripts": {
+    "build": "npm run build:config && npm run build:lib && npm run build:umd",
+    "build:config": "node -e \"require('fs').writeFileSync('src/debug-config.ts', 'export const DEBUG_BUILD = ' + (process.env.DEBUG_BUILD === 'true') + ';\\n')\"",
+    "build:lib": "tsc",
+    "build:umd": "npm run build:umd:bpmn && npm run build:umd:dmn && npm run build:umd:differ",
+    "build:umd:bpmn": "esbuild src/bpmn-moddle-umd.js --bundle --format=iife --global-name=BpmnModdle --outfile=operaton_extension/static/bpmn-moddle.umd.js --minify",
+    "build:umd:dmn": "esbuild src/dmn-moddle-umd.js --bundle --format=iife --global-name=DmnModdle --outfile=operaton_extension/static/dmn-moddle.umd.js --minify",
+    "build:umd:differ": "esbuild src/bpmn-js-differ-umd.js --bundle --format=iife --global-name=BpmnJsDiffer --outfile=operaton_extension/static/bpmn-js-differ.umd.js --minify",
+    "build:labextension": "jupyter labextension build --development True .",
+    "build:labextension:prod": "jupyter labextension build .",
+    "clean": "rimraf lib",
+    "clean:labextension": "rimraf operaton_extension/labextension",
+    "clean:all": "npm run clean && npm run clean:labextension"
+  },
+  "dependencies": {
+    "bpmn-js-differ": "^3.1.0",
+    "bpmn-moddle": "^10.0.0",
+    "camunda-bpmn-moddle": "^7.0.1",
+    "camunda-dmn-moddle": "^1.3.0",
+    "dmn-moddle": "^12.0.1"
+  },
+  "devDependencies": {
+    "@jupyterlab/application": "^4.3.0",
+    "@jupyterlab/builder": "^4.3.0",
+    "esbuild": "^0.27.2",
+    "rimraf": "^6.0.0",
+    "typescript": "~5.3.0"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "operaton_extension/labextension"
+  }
+}

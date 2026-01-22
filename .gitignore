@@ -1,14 +1,59 @@
-.idea/
-.cache/
-*.egg-info
-*.doit.db
-*.tsbuildinfo
-lib/
-dist/
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+.devcontainer.json
+
+# pre-commit
+.pre-commit-config.yaml
+
+# JupyterLite
+jupyter-lite-route.js
+.jupyterlite.doit.db
+/.cache/
+/dist/
+packages/*/dist/
+
+# Node.js
 node_modules/
-tmp/
-/lite/jupyterlite-camunda/build/
-/lite/jupyterlite-camunda/py_src/jupyterlite_camunda/labextensions/
-_pypi.ts
-camunda-cockpit-ui.js
+packages/*/node_modules/
+packages/*/lib/
+/labextensions/
+
+# npm
+package-lock.json
+
+# TypeScript
 *.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+*.whl
+
+# JupyterLab extension build artifacts
+packages/*/operaton_extension/labextension/
+packages/*/*.tgz
+
+# Yarn (if used)
+yarn.lock
+.yarn/
+.pnp.*
+
+# Editor
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agents
+TODO*

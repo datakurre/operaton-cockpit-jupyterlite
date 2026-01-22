@@ -1,0 +1,49 @@
+{
+  "PyodideLockAddon": {
+    "enabled": true,
+    "locker": "UvLocker",
+    "specs": [
+      "pyodide-kernel",
+      "piplite",
+      "ipykernel",
+      "comm",
+      "ipywidgets",
+      "jupyterlab-bpmn",
+      "jupyterlab-dmn"
+    ],
+    "packages": []
+  },
+  "PyodideLockOfflineAddon": {
+    "enabled": true,
+    "extra_includes": [
+      "ipython",
+      "asttokens",
+      "six",
+      "decorator",
+      "executing",
+      "matplotlib_inline",
+      "traitlets",
+      "contourpy",
+      "cycler",
+      "fonttools",
+      "kiwisolver",
+      "packaging",
+      "pillow",
+      "pyparsing",
+      "python_dateutil",
+      "pytz",
+      "prompt_toolkit",
+      "wcwidth",
+      "pure_eval",
+      "pygments",
+      "stack_data",
+      "numpy",
+      "matplotlib",
+      "jedi",
+      "parso"
+    ]
+  },
+  "UvLocker": {
+    "timeout": 300
+  }
+}
