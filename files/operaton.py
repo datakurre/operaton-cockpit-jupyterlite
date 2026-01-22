@@ -43,6 +43,23 @@ from pyodide.ffi import create_proxy, to_js
 
 
 # =============================================================================
+# Debug Configuration
+# =============================================================================
+
+def DEBUG() -> bool:
+    """
+    Check if debug mode is enabled.
+    
+    Debug mode can be enabled by setting 'operaton-debug' to 'true' in localStorage.
+    This matches the behavior of the TypeScript extension.
+    """
+    try:
+        return js.localStorage.getItem('operaton-debug') == 'true'
+    except Exception:
+        return False
+
+
+# =============================================================================
 # BroadcastChannel Bridge
 # =============================================================================
 
@@ -57,33 +74,41 @@ class OperatonBridge:
     """
     
     def __init__(self):
-        print(f"[OperatonBridge] Creating BroadcastChannel '{CHANNEL_NAME}'")
+        if DEBUG():
+            print(f"[OperatonBridge] Creating BroadcastChannel '{CHANNEL_NAME}'")
         self._channel = js.BroadcastChannel.new(CHANNEL_NAME)
         self._pending_responses = {}
         self._request_id = 0
         # Set up message handler
         self._on_message_proxy = create_proxy(self._on_message)
         self._channel.onmessage = self._on_message_proxy
-        print(f"[OperatonBridge] BroadcastChannel created and message handler attached")
+        if DEBUG():
+            print(f"[OperatonBridge] BroadcastChannel created and message handler attached")
     
     def _on_message(self, event):
         """Handle messages from the extension."""
-        print(f"[OperatonBridge] Received message event: {event}")
+        if DEBUG():
+            print(f"[OperatonBridge] Received message event: {event}")
         try:
             data = event.data.to_py()
-            print(f"[OperatonBridge] Parsed message data: {data}")
+            if DEBUG():
+                print(f"[OperatonBridge] Parsed message data: {data}")
             request_id = data.get('request_id')
-            print(f"[OperatonBridge] Request ID from response: {request_id}, pending: {list(self._pending_responses.keys())}")
+            if DEBUG():
+                print(f"[OperatonBridge] Request ID from response: {request_id}, pending: {list(self._pending_responses.keys())}")
             
             if request_id and request_id in self._pending_responses:
                 future = self._pending_responses[request_id]
                 if not future.done():
-                    print(f"[OperatonBridge] Resolving future for request {request_id}")
+                    if DEBUG():
+                        print(f"[OperatonBridge] Resolving future for request {request_id}")
                     future.set_result(data)
                 else:
-                    print(f"[OperatonBridge] Future already done for request {request_id}")
+                    if DEBUG():
+                        print(f"[OperatonBridge] Future already done for request {request_id}")
             else:
-                print(f"[OperatonBridge] No pending request for ID {request_id}")
+                if DEBUG():
+                    print(f"[OperatonBridge] No pending request for ID {request_id}")
         except Exception as e:
             print(f"[OperatonBridge] Error handling message: {e}")
             import traceback
@@ -104,15 +129,19 @@ class OperatonBridge:
             'request_id': request_id,
             **kwargs
         }
-        print(f"[OperatonBridge] Sending message: {message}")
+        if DEBUG():
+            print(f"[OperatonBridge] Sending message: {message}")
         js_message = to_js(message, dict_converter=js.Object.fromEntries)
-        print(f"[OperatonBridge] JS message object: {js_message}")
+        if DEBUG():
+            print(f"[OperatonBridge] JS message object: {js_message}")
         self._channel.postMessage(js_message)
-        print(f"[OperatonBridge] Message posted, waiting for response...")
+        if DEBUG():
+            print(f"[OperatonBridge] Message posted, waiting for response...")
         
         try:
             response = await asyncio.wait_for(response_future, timeout=30.0)
-            print(f"[OperatonBridge] Got response: {response}")
+            if DEBUG():
+                print(f"[OperatonBridge] Got response: {response}")
             if response.get('action') == 'error':
                 raise RuntimeError(response.get('error', 'Unknown error'))
             return response
@@ -201,12 +230,14 @@ async def _load_env_async():
             env_data = json.loads(env_json)
             for key, value in env_data.items():
                 os.environ[key] = str(value)
-            print(f"[operaton] Loaded {len(env_data)} environment variables from localStorage")
+            if DEBUG():
+                print(f"[operaton] Loaded {len(env_data)} environment variables from localStorage")
             _env_loaded = True
         except json.JSONDecodeError as e:
             print(f"[operaton] Error parsing env from localStorage: {e}")
     else:
-        print("[operaton] No 'env' key found in localStorage")
+        if DEBUG():
+            print("[operaton] No 'env' key found in localStorage")
 
 
 async def _ensure_env_async():
@@ -388,7 +419,8 @@ async def load_bpmn_moddle():
     
     if hasattr(js, 'BpmnModdle'):
         _bpmn_moddle_loaded = True
-        print("bpmn-moddle: Loaded successfully via BroadcastChannel (with Camunda extensions)")
+        if DEBUG():
+            print("bpmn-moddle: Loaded successfully via BroadcastChannel (with Camunda extensions)")
         return js.BpmnModdle
     else:
         raise ImportError("BpmnModdle not found after evaluating bundle")
@@ -513,7 +545,8 @@ async def load_dmn_moddle():
     
     if hasattr(js, 'DmnModdle'):
         _dmn_moddle_loaded = True
-        print("dmn-moddle: Loaded successfully via BroadcastChannel")
+        if DEBUG():
+            print("dmn-moddle: Loaded successfully via BroadcastChannel")
         return js.DmnModdle
     else:
         raise ImportError("DmnModdle not found after evaluating bundle")
@@ -634,7 +667,8 @@ async def load_bpmn_js_differ():
     
     if hasattr(js, 'bpmnDiff'):
         _bpmn_js_differ_loaded = True
-        print("bpmn-js-differ: Loaded successfully via BroadcastChannel")
+        if DEBUG():
+            print("bpmn-js-differ: Loaded successfully via BroadcastChannel")
         return js.bpmnDiff
     else:
         raise ImportError("bpmnDiff not found after evaluating bundle")
