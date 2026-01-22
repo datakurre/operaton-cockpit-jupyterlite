@@ -1,0 +1,24 @@
+{
+  "PyodideLockAddon": {
+    "enabled": true,
+    "locker": "UvLocker",
+    "specs": [
+      "pyodide-kernel",
+      "piplite",
+      "ipykernel",
+      "comm",
+      "ipywidgets",
+      "bqplot",
+      "jupyterlab-bpmn",
+      "jupyterlab-dmn"
+    ],
+    "packages": []
+  },
+  "PyodideLockOfflineAddon": {
+    "enabled": true,
+    "extra_includes": [".*"]
+  },
+  "UvLocker": {
+    "timeout": 300
+  }
+}

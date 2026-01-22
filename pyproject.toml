@@ -1,0 +1,17 @@
+[project]
+name = "camunda-cockpit-plugin-jupyter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipywidgets>=8.1.8",
+    "jupyter-server>=2.17.0",
+    "jupyterlab-bpmn>=0.5.6",
+    "jupyterlab-dmn>=0.2.0",
+    "jupyterlab-widgets>=3.0.0",
+    "jupyterlite-core>=0.7.1",
+    "jupyterlite-pyodide-kernel>=0.7.0",
+    "jupyterlite-pyodide-lock @ git+https://github.com/deathbeds/jupyterlite-pyodide-lock.git#subdirectory=py/jupyterlite-pyodide-lock",
+    "jupyterlite-pyodide-lock-uv @ git+https://github.com/deathbeds/jupyterlite-pyodide-lock.git#subdirectory=py/jupyterlite-pyodide-lock-uv",
+]
