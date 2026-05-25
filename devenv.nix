@@ -15,7 +15,4 @@ in
   profiles.shell.module = {
     imports = [ shell ];
   };
-  profiles.devcontainer.module = {
-    imports = [ devcontainer ];
-  };
 }
