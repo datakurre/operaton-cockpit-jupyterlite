@@ -9,9 +9,9 @@ develop:
 # Clean build artifacts
 clean:
 	rm -rf dist .jupyterlite.doit.db jupyter-lite-route.js
-	rm -rf .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension
-	rm -rf .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
-	rm -rf .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn
+	rm -rf .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension
+	rm -rf .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
+	rm -rf .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-dmn
 	cd packages/operaton-extension && rm -f tsconfig.tsbuildinfo .jupyterlite.doit.db && rm -rf bpmn_moddle_extension operaton_extension/labextension && npm run clean --if-present || true
 
 # Install Node.js dependencies
@@ -34,18 +34,18 @@ build-js-debug: install-js
 # Common post-build steps for JavaScript packages (internal target)
 _build-js-post:
 	uv run jupyter labextension build packages/operaton-extension --development True
-	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-bpmn --development True
-	uv run jupyter labextension build /workspaces/camunda-cockpit-plugin-jupyter/packages/jupyterlab-dmn --development True
+	uv run jupyter labextension build packages/jupyterlab-bpmn --development True
+	uv run jupyter labextension build packages/jupyterlab-dmn --development True
 	@echo "Installing extensions in venv..."
-	mkdir -p .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static
-	cp -r packages/operaton-extension/operaton_extension/labextension/* .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/
-	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
-	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
-	cp packages/operaton-extension/operaton_extension/static/bpmn-js-differ.umd.js .devenv/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
-	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
-	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/* .devenv/state/venv/share/jupyter/labextensions/jupyterlab-bpmn/
-	mkdir -p .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn
-	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/* .devenv/state/venv/share/jupyter/labextensions/jupyterlab-dmn/
+	mkdir -p .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static
+	cp -r packages/operaton-extension/operaton_extension/labextension/* .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/
+	cp packages/operaton-extension/operaton_extension/static/bpmn-moddle.umd.js .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/dmn-moddle.umd.js .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	cp packages/operaton-extension/operaton_extension/static/bpmn-js-differ.umd.js .devenv/profiles/shell/state/venv/share/jupyter/labextensions/@operaton/operaton-extension/static/
+	mkdir -p .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-bpmn
+	cp -r packages/jupyterlab-bpmn/jupyterlab_bpmn/labextension/* .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-bpmn/
+	mkdir -p .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-dmn
+	cp -r packages/jupyterlab-dmn/jupyterlab_dmn/labextension/* .devenv/profiles/shell/state/venv/share/jupyter/labextensions/jupyterlab-dmn/
 
 # Build JupyterLite site with locked dependencies
 build: clean build-js
@@ -57,6 +57,7 @@ build-debug: clean build-js-debug
 
 # Common JupyterLite build steps (internal target)
 _build-lite:
+	ln -sfn "$$(readlink .devenv/profiles/shell/profile)" .devenv/profile
 	uv run jupyter lite build --output-dir dist
 	@echo "Copying fresh extension files to dist..."
 	cp -r packages/operaton-extension/operaton_extension/labextension/static/* dist/extensions/@operaton/operaton-extension/static/
